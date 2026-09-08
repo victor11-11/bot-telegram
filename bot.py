@@ -3,6 +3,7 @@ import logging
 from collections import defaultdict
 from dotenv import load_dotenv
 from telegram import Update
+from telegram.constants import ChatAction
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 import openai
 
@@ -40,6 +41,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_text = update.message.text
+
+    # Enviar acción "Escribiendo..." de inmediato a Telegram
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
     if user_id not in user_conversations or not user_conversations[user_id]:
         user_conversations[user_id] = [SYSTEM_PROMPT]
