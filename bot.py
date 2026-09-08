@@ -9,16 +9,17 @@ import openai
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
+# Cliente reconfigurado para NVIDIA NIM API
 client = openai.OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY,
+    base_url="https://integrate.api.nvidia.com/v1",
+    api_key=NVIDIA_API_KEY,
 )
 
 SYSTEM_PROMPT = {
@@ -49,9 +50,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_conversations[user_id] = [SYSTEM_PROMPT] + user_conversations[user_id][-10:]
 
     try:
+        # Llamada con el modelo y parámetros de NVIDIA
         response = client.chat.completions.create(
-            model="meta-llama/llama-3.3-70b-instruct",
+            model="openai/gpt-oss-20b",
             messages=user_conversations[user_id],
+            temperature=1,
+            top_p=1,
+            max_tokens=4096
         )
         bot_reply = response.choices[0].message.content
         user_conversations[user_id].append({"role": "assistant", "content": bot_reply})
