@@ -38,6 +38,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text="¡Hola! Soy Claudia. ¿En qué puedo ayudarte hoy?"
     )
 
+async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    # Restablece la conversación manteniendo únicamente el system prompt original
+    user_conversations[user_id] = [SYSTEM_PROMPT]
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="🔄 Memoria reiniciada. Hemos comenzado una nueva conversación."
+    )
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_text = update.message.text
@@ -77,6 +86,7 @@ if __name__ == '__main__':
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
     application.add_handler(CommandHandler('start', start))
+    application.add_handler(CommandHandler('reset', reset))
     application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
 
     application.run_polling()
